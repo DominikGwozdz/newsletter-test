@@ -6,11 +6,11 @@
     <div class="container">
         <form action="{{ path('newsletter') }}" method="post">
             <div class="pt-5">
-                <label for="email" class="form-label">Adres e-mail</label>
+                <label for="email" class="form-label">E-mail address</label>
                 <input type="email" class="form-control" id="email" name="email">
-                <div id="email" class="form-text">Nikomu nie udostępniamy Twojego adresu e-mail</div>
+                <div id="email" class="form-text">We do not share your e-mail address</div>
             </div>
-            <button name="submit" type="submit" class="mt-4 btn btn-primary">Zapisz się</button>
+            <button name="submit" type="submit" class="mt-4 btn btn-primary">Sign in</button>
         </form>
 
         <div class="mt-5 pt-5">
@@ -18,9 +18,6 @@
             <div id="response-error" class="alert alert-danger d-none"></div>
         </div>
     </div>
-
-
-
 
     <script>
         $(function () {
@@ -41,7 +38,6 @@
                         }
                     }
                 });
-
             });
         });
     </script>
