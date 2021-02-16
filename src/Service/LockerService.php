@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 class LockerService
 {
     private const MAX_ATTEMPT_COUNT = 3;
-    private const LOCKDOWN_MINUTES = 1;
+    private const LOCKDOWN_MINUTES = 5;
 
     public function __construct(protected EntityManagerInterface $em){}
 
