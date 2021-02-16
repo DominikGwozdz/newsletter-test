@@ -10,7 +10,39 @@
                 <input type="email" class="form-control" id="email" name="email">
                 <div id="email" class="form-text">Nikomu nie udostępniamy Twojego adresu e-mail</div>
             </div>
-            <button type="submit" class="mt-4 btn btn-primary">Zapisz się</button>
+            <button name="submit" type="submit" class="mt-4 btn btn-primary">Zapisz się</button>
         </form>
+
+        <div class="mt-5 pt-5">
+            <div id="response-success" class="alert alert-success d-none"></div>
+            <div id="response-error" class="alert alert-danger d-none"></div>
+        </div>
     </div>
+
+
+
+
+    <script>
+        $(function () {
+            $('form').on('submit', function (event) {
+                event.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: 'newsletter',
+                    data: $('form').serialize(),
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response[0].status === 200) {
+                            $('#response-success').removeClass('d-none').html(response[0].message);
+                            $('#response-error').addClass('d-none').html('');
+                        } else {
+                            $('#response-success').addClass('d-none').html('');
+                            $('#response-error').removeClass('d-none').html(response[0].message);
+                        }
+                    }
+                });
+
+            });
+        });
+    </script>
 {% endblock %}
