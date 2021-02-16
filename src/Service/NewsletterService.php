@@ -5,14 +5,15 @@ namespace App\Service;
 use App\Entity\Newsletter;
 use App\Exception\EmailAlreadyExistsException;
 use App\Exception\EmailIsNotValidException;
-use App\Repository\NewsletterRepository;
+use App\Exception\ExceededAttemptCountException;
 use Doctrine\ORM\EntityManagerInterface;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class NewsletterService
 {
-    public function __construct(protected EntityManagerInterface $em){}
+    public function __construct(protected EntityManagerInterface $em, protected LockerService $locker, protected RequestStack $requestStack){}
 
     #[ArrayShape(['status' => "int", 'message' => "string"])]
     public function signIn(string $email) : array
@@ -23,27 +24,38 @@ class NewsletterService
                 'status' => 200,
                 'message' => 'Thank for your subscription. We sent you an email with special url to confirm',
             ];
-        } catch (EmailAlreadyExistsException) {
+        } catch (EmailAlreadyExistsException $e) {
             return [
                 'status' => 400,
-                'message' => 'Email is already exists in our database.',
+                'message' => $e->getMessage(),
             ];
-        } catch (EmailIsNotValidException) {
+        } catch (EmailIsNotValidException $e) {
             return [
                 'status' => 400,
-                'message' => 'Provided email address is not valid.',
+                'message' => $e->getMessage(),
+            ];
+        } catch (ExceededAttemptCountException $e) {
+            return [
+                'status' => 401,
+                'message' => $e->getMessage(),
             ];
         }
     }
 
     public function processData(string $email) : void
     {
+        if ($this->locker->isIpBanned($this->requestStack->getCurrentRequest()->getClientIp())) {
+            throw new ExceededAttemptCountException('You were banned');
+        }
+
         if (!$this->validateEmail($email)) {
-            throw new EmailIsNotValidException('Provided email is not valid');
+            $this->locker->addLockerEntry($this->requestStack->getCurrentRequest()->getClientIp());
+            throw new EmailIsNotValidException('Provided email address is not valid.');
         }
 
         if ($this->isEmailExists($email)) {
-            throw new EmailAlreadyExistsException('Email is already exists');
+            $this->locker->addLockerEntry($this->requestStack->getCurrentRequest()->getClientIp());
+            throw new EmailAlreadyExistsException('Email is already exists in our database.');
         }
 
         $newsletter = new Newsletter();
