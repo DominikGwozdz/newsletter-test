@@ -34,6 +34,19 @@ class NewsletterService
 
     public function processData(string $email) : void
     {
+        $this->validateAll($email);
+
+        $newsletter = new Newsletter();
+        $newsletter->setEmail($email);
+        $newsletter->setIsConfirmed(0);
+        $newsletter->setSignedAt(new \DateTime('now'));
+        $newsletter->setHash(md5($email));
+        $this->em->persist($newsletter);
+        $this->em->flush();
+    }
+
+    private function validateAll(string $email) : bool
+    {
         if ($this->locker->isIpBanned($this->requestStack->getCurrentRequest()->getClientIp())) {
             throw new ExceededAttemptCountException('You were banned', 403);
         }
@@ -48,13 +61,7 @@ class NewsletterService
             throw new EmailAlreadyExistsException('Email is already exists in our database.', 400);
         }
 
-        $newsletter = new Newsletter();
-        $newsletter->setEmail($email);
-        $newsletter->setIsConfirmed(0);
-        $newsletter->setSignedAt(new \DateTime('now'));
-        $newsletter->setHash(md5($email));
-        $this->em->persist($newsletter);
-        $this->em->flush();
+        return true;
     }
 
     #[Pure]
