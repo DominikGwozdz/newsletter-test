@@ -24,14 +24,9 @@ class NewsletterService
                 'status' => 200,
                 'message' => 'Thank for your subscription. We sent you an email with special url to confirm',
             ];
-        } catch (EmailAlreadyExistsException | EmailIsNotValidException $e) {
+        } catch (EmailAlreadyExistsException | EmailIsNotValidException | ExceededAttemptCountException $e) {
             return [
-                'status' => 400,
-                'message' => $e->getMessage(),
-            ];
-        } catch (ExceededAttemptCountException $e) {
-            return [
-                'status' => 401,
+                'status' => $e->getCode(),
                 'message' => $e->getMessage(),
             ];
         }
@@ -40,17 +35,17 @@ class NewsletterService
     public function processData(string $email) : void
     {
         if ($this->locker->isIpBanned($this->requestStack->getCurrentRequest()->getClientIp())) {
-            throw new ExceededAttemptCountException('You were banned');
+            throw new ExceededAttemptCountException('You were banned', 403);
         }
 
         if (!$this->validateEmail($email)) {
-            $this->locker->addLockerEntry($this->requestStack->getCurrentRequest()->getClientIp());
-            throw new EmailIsNotValidException('Provided email address is not valid.');
+            $this->locker->increaseAttempt($this->requestStack->getCurrentRequest()->getClientIp());
+            throw new EmailIsNotValidException('Provided email address is not valid.', 400);
         }
 
         if ($this->isEmailExists($email)) {
-            $this->locker->addLockerEntry($this->requestStack->getCurrentRequest()->getClientIp());
-            throw new EmailAlreadyExistsException('Email is already exists in our database.');
+            $this->locker->increaseAttempt($this->requestStack->getCurrentRequest()->getClientIp());
+            throw new EmailAlreadyExistsException('Email is already exists in our database.', 400);
         }
 
         $newsletter = new Newsletter();

@@ -13,7 +13,7 @@ class LockerService
 
     public function __construct(protected EntityManagerInterface $em){}
 
-    public function addLockerEntry(string $ipAddress) : bool
+    public function increaseAttempt(string $ipAddress) : bool
     {
         /** @var Locker $locker */
         $locker = $this->em->getRepository(Locker::class)->findOneBy(['ip_address' => $ipAddress]);
@@ -35,11 +35,7 @@ class LockerService
             }
             return true;
         } else {
-            $locker = new Locker();
-            $locker->setIpAddress($ipAddress);
-            $locker->setAttemptCount(1);
-            $this->em->persist($locker);
-            $this->em->flush();
+            $this->addNewLockerEntry($ipAddress);
             return true;
         }
     }
@@ -53,5 +49,14 @@ class LockerService
         }
 
         return $locker->getLockUntil() > new \DateTime('now');
+    }
+
+    private function addNewLockerEntry(string $ipAddress): void
+    {
+        $locker = new Locker();
+        $locker->setIpAddress($ipAddress);
+        $locker->setAttemptCount(1);
+        $this->em->persist($locker);
+        $this->em->flush();
     }
 }
