@@ -13,7 +13,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class NewsletterService
 {
-    public function __construct(protected EntityManagerInterface $em, protected LockerService $locker, protected RequestStack $requestStack){}
+    public function __construct(
+        protected EntityManagerInterface $em,
+        protected LockerService $locker,
+        protected RequestStack $requestStack) {}
 
     #[ArrayShape(['status' => "int", 'message' => "string"])]
     public function signIn(string $email) : array
