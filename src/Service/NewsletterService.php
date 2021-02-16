@@ -24,12 +24,7 @@ class NewsletterService
                 'status' => 200,
                 'message' => 'Thank for your subscription. We sent you an email with special url to confirm',
             ];
-        } catch (EmailAlreadyExistsException $e) {
-            return [
-                'status' => 400,
-                'message' => $e->getMessage(),
-            ];
-        } catch (EmailIsNotValidException $e) {
+        } catch (EmailAlreadyExistsException | EmailIsNotValidException $e) {
             return [
                 'status' => 400,
                 'message' => $e->getMessage(),
