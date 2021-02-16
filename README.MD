@@ -18,3 +18,6 @@
 
 ###Additional Information
 - Project use PHP 8.0.0-fpm as service and Nginx as web server with mysql 5.7 and all this in 3 different docker containers. Project based on latest Symfony
+
+####PHP Unit
+1. run command `docker exec 973b php bin/phpunit`
