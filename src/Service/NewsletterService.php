@@ -45,7 +45,7 @@ class NewsletterService
         $this->em->flush();
     }
 
-    private function validateAll(string $email) : bool
+    private function validateAll(string $email) : void
     {
         if ($this->locker->isIpBanned($this->requestStack->getCurrentRequest()->getClientIp())) {
             throw new ExceededAttemptCountException('You were banned', 403);
@@ -60,8 +60,6 @@ class NewsletterService
             $this->locker->increaseAttempt($this->requestStack->getCurrentRequest()->getClientIp());
             throw new EmailAlreadyExistsException('Email is already exists in our database.', 400);
         }
-
-        return true;
     }
 
     #[Pure]
